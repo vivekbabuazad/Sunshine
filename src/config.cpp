@@ -809,7 +809,7 @@ namespace config {
 
     APPS_JSON_PATH,
 
-    20,  // fecPercentage
+    50,  // fecPercentage
 
     ENCRYPTION_MODE_NEVER,  // lan_encryption_mode
     ENCRYPTION_MODE_OPPORTUNISTIC,  // wan_encryption_mode
@@ -858,6 +858,9 @@ namespace config {
     true,  // always send scancodes
     true,  // high resolution scrolling
     true,  // native pen/touch support
+    47989,  // Base port number
+    47998,  // port_starting
+    48010,  // port_ending
   };
 
   /**
@@ -1809,6 +1812,14 @@ namespace config {
     int port = sunshine.port;
     int_between_f(vars, "port"s, port, {1024 + nvhttp::PORT_HTTPS, 65535 - rtsp_stream::RTSP_SETUP_PORT});
     sunshine.port = (std::uint16_t) port;
+
+    int port_starting = sunshine.port_starting;
+    int_between_f(vars, "port_starting"s, port_starting, {1024, 65535});
+    sunshine.port_starting = (std::uint16_t) port_starting;
+
+    int port_ending = sunshine.port_ending;
+    int_between_f(vars, "port_ending"s, port_ending, {1024, 65535});
+    sunshine.port_ending = (std::uint16_t) port_ending;
 
     // Now that we have the port, add web UI port-specific origins to CSRF allowed list
     // Web UI runs on port + 1 (PORT_HTTPS offset is 1 for confighttp)

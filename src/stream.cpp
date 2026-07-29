@@ -737,9 +737,48 @@ namespace stream {
           break;
         case ENET_EVENT_TYPE_CONNECT:
           BOOST_LOG(info) << "CLIENT CONNECTED"sv;
+          connection_epoch++;
           break;
         case ENET_EVENT_TYPE_DISCONNECT:
           BOOST_LOG(info) << "CLIENT DISCONNECTED"sv;
+          {
+            int current_epoch = ++connection_epoch;
+            
+            std::jthread([current_epoch]() {
+                BOOST_LOG(info) << "10-minute session disconnect timer started.";
+                std::this_thread::sleep_for(std::chrono::minutes(10));
+                
+                if (connection_epoch == current_epoch) {
+                    BOOST_LOG(warning) << "10 minutes elapsed without reconnection. Terminating session and locking screen.";
+                    proc::proc.terminate();
+                    
+                    #ifdef _WIN32
+                    std::jthread([]() {
+                        WNDCLASSA wc = {};
+                        wc.lpfnWndProc = DefWindowProc;
+                        wc.hInstance = GetModuleHandle(nullptr);
+                        wc.lpszClassName = "LimelightLockScreen";
+                        wc.hbrBackground = CreateSolidBrush(RGB(255, 255, 255));
+                        RegisterClassA(&wc);
+                        
+                        CreateWindowExA(
+                            WS_EX_TOPMOST | WS_EX_TOOLWINDOW, "LimelightLockScreen", "",
+                            WS_POPUP | WS_VISIBLE,
+                            0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
+                            nullptr, nullptr, wc.hInstance, nullptr
+                        );
+                        ShowCursor(FALSE);
+                        
+                        MSG msg;
+                        while (GetMessage(&msg, nullptr, 0, 0)) {
+                            TranslateMessage(&msg);
+                            DispatchMessage(&msg);
+                        }
+                    }).detach();
+                    #endif
+                }
+            }).detach();
+          }
           // No more clients to send video data to ^_^
           if (session->state == session::state_e::RUNNING) {
             session::stop(*session);

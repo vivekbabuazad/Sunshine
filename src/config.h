@@ -363,6 +363,8 @@ namespace config {
     } cmd;  ///< Command line used to launch the application.
 
     std::uint16_t port;  ///< TCP port used by Sunshine services.
+    std::uint16_t port_starting;  ///< Starting UDP/TCP port range.
+    std::uint16_t port_ending;  ///< Ending UDP/TCP port range.
     std::string address_family;  ///< Address family requested for listening sockets.
     std::string bind_address;  ///< Local address Sunshine should bind to.
 
