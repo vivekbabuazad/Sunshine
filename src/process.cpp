@@ -32,6 +32,7 @@
 #include "utility.h"
 
 #ifdef _WIN32
+  #include <windows.h>
   // from_utf8() string conversion function
   #include "platform/windows/utf_utils.h"
 
@@ -157,7 +158,7 @@ namespace proc {
       char exePath[MAX_PATH];
       GetModuleFileNameA(nullptr, exePath, MAX_PATH);
       std::error_code ec;
-      _privacy_proc = platf::run_command(false, false, std::string(exePath) + " --mask", boost::filesystem::path(""), _env, nullptr, ec, nullptr);
+      _privacy_proc = platf::run_command(false, false, "\"" + std::string(exePath) + "\" --mask", boost::filesystem::path(""), _env, nullptr, ec, nullptr);
       if (ec) {
         BOOST_LOG(error) << "Failed to launch Privacy Mask: "sv << ec.message();
       }
