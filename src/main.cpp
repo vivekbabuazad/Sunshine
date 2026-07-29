@@ -31,7 +31,7 @@
 #include "video.h"
 
 extern "C" {
-#include "rswrapper.h"
+
 }
 
 using namespace std::literals;
