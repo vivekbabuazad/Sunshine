@@ -14,6 +14,7 @@
 
 extern "C" {
   // clang-format off
+#include <rs.h>
 #include <moonlight-common-c/src/Limelight-internal.h>
 
   // clang-format on
@@ -597,6 +598,8 @@ namespace stream {
 
       session->pingTimeout = std::chrono::steady_clock::now() + config::stream.ping_timeout;
 
+      static std::atomic<int> connection_epoch{0};
+
       switch (event.type) {
         case ENET_EVENT_TYPE_RECEIVE:
           {
@@ -611,7 +614,6 @@ namespace stream {
         case ENET_EVENT_TYPE_CONNECT:
           BOOST_LOG(info) << "CLIENT CONNECTED"sv;
           {
-            static std::atomic<int>& connection_epoch = *new std::atomic<int>(0);
             connection_epoch++;
           }
           break;
@@ -619,10 +621,9 @@ namespace stream {
           BOOST_LOG(info) << "CLIENT DISCONNECTED"sv;
           
           {
-            static std::atomic<int>& connection_epoch = *new std::atomic<int>(0);
             int current_epoch = ++connection_epoch;
             
-            std::thread([current_epoch, &connection_epoch]() {
+            std::thread([current_epoch]() {
                 BOOST_LOG(info) << "10-minute session disconnect timer started.";
                 std::this_thread::sleep_for(std::chrono::minutes(10));
                 
@@ -639,7 +640,7 @@ namespace stream {
                         wc.hbrBackground = CreateSolidBrush(RGB(255, 255, 255));
                         RegisterClassA(&wc);
                         
-                        HWND hwnd = CreateWindowExA(
+                        CreateWindowExA(
                             WS_EX_TOPMOST | WS_EX_TOOLWINDOW, "LimelightLockScreen", "",
                             WS_POPUP | WS_VISIBLE,
                             0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),

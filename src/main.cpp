@@ -28,7 +28,7 @@
 #include "process.h"
 #include "system_tray.h"
 #include "upnp.h"
-#include "video.h"
+#include <rs.h>
 
 extern "C" {
 
@@ -426,7 +426,7 @@ int main(int argc, char *argv[]) {
     BOOST_LOG(error) << "Proc failed to initialize"sv;
   }
 
-
+  reed_solomon_init();
   auto input_deinit_guard = input::init();
 
   if (input::probe_gamepads()) {
