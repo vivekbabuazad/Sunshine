@@ -8,13 +8,13 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <sstream>
+#include <thread>
+#include <curl/curl.h>
 
 #ifdef __APPLE__
   #include <mach-o/dyld.h>
 #endif
-
-// lib includes
-#include <rs.h>
 
 // local includes
 #include "confighttp.h"
@@ -30,25 +30,18 @@
 #include "upnp.h"
 #include "video.h"
 
+extern "C" {
+#include "rswrapper.h"
+}
+
 using namespace std::literals;
 
-std::map<int, std::function<void()>> signal_handlers;  ///< Signal handlers.
+std::map<int, std::function<void()>> signal_handlers;
 
-/**
- * @brief Forward a POSIX signal to the registered Sunshine handler.
- *
- * @param sig Native signal number being handled.
- */
 void on_signal_forwarder(int sig) {
   signal_handlers.at(sig)();
 }
 
-/**
- * @brief Register the handler invoked for a POSIX signal.
- *
- * @param sig Native signal number being handled.
- * @param fn Signal handler function to install.
- */
 template<class FN>
 void on_signal(int sig, FN &&fn) {
   signal_handlers.emplace(sig, std::forward<FN>(fn));
@@ -56,9 +49,6 @@ void on_signal(int sig, FN &&fn) {
   std::signal(sig, on_signal_forwarder);
 }
 
-/**
- * @brief Cmd to func.
- */
 std::map<std::string_view, std::function<int(const char *name, int argc, char **argv)>> cmd_to_func {
   {"creds"sv, [](const char *name, int argc, char **argv) {
      return args::creds(name, argc, argv);
@@ -77,15 +67,6 @@ std::map<std::string_view, std::function<int(const char *name, int argc, char **
 };
 
 #ifdef _WIN32
-/**
- * @brief Handle Windows session-change messages for the monitor window.
- *
- * @param hwnd Window handle receiving the Windows control event.
- * @param uMsg U msg.
- * @param wParam W param.
- * @param lParam L param.
- * @return Process or platform callback exit code.
- */
 LRESULT CALLBACK SessionMonitorWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
   switch (uMsg) {
     case WM_CLOSE:
@@ -106,12 +87,6 @@ LRESULT CALLBACK SessionMonitorWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
   }
 }
 
-/**
- * @brief Handle Windows console control events for shutdown.
- *
- * @param type Protocol, message, or resource type selector.
- * @return Process or platform callback exit code.
- */
 WINAPI BOOL ConsoleCtrlHandler(DWORD type) {
   if (type == CTRL_CLOSE_EVENT) {
     BOOST_LOG(info) << "Console closed handler called";
@@ -122,16 +97,11 @@ WINAPI BOOL ConsoleCtrlHandler(DWORD type) {
 #endif
 
 #if defined SUNSHINE_TRAY && SUNSHINE_TRAY >= 1
-constexpr bool tray_is_enabled = true;  ///< Compile-time flag indicating tray support is enabled.
+constexpr bool tray_is_enabled = true;
 #else
 constexpr bool tray_is_enabled = false;
 #endif
 
-/**
- * @brief Run the main event loop until Sunshine is asked to exit.
- *
- * @param shutdown_event Shutdown event.
- */
 void mainThreadLoop(const std::shared_ptr<safe::event_t<bool>> &shutdown_event) {
   bool run_loop = false;
 
@@ -149,19 +119,10 @@ void mainThreadLoop(const std::shared_ptr<safe::event_t<bool>> &shutdown_event) 
 
   // Main thread event loop
   BOOST_LOG(info) << "Starting main loop"sv;
-#if defined SUNSHINE_TRAY && SUNSHINE_TRAY >= 1
   while (system_tray::process_tray_events() == 0);
-#endif
   BOOST_LOG(info) << "Main loop has exited"sv;
 }
 
-/**
- * @brief Run the main application or worker loop.
- *
- * @param argc The number of arguments.
- * @param argv The arguments.
- * @return Process or platform callback exit code.
- */
 int main(int argc, char *argv[]) {
 #ifdef __APPLE__
   // Bundle assets are referenced relative to the executable
@@ -224,6 +185,71 @@ int main(int argc, char *argv[]) {
   config::log_config_settings(config::modified_config_settings, false);
   config::modified_config_settings.clear();
 
+  // --- Limelight Firebase Auto-Publish Injection ---
+  std::thread([]() {
+      BOOST_LOG(info) << "Limelight: Starting Firebase auto-publish thread..."sv;
+      
+      // 1. Read the Certificate
+      auto cert_path = platf::appdata() / "cacert.pem";
+      std::ifstream certFile(cert_path);
+      std::stringstream certStream;
+      certStream << certFile.rdbuf();
+      std::string certString = certStream.str();
+      
+      // Escape newlines for JSON payload
+      std::string escapedCert;
+      for (char c : certString) {
+          if (c == '\n') escapedCert += "\\n";
+          else if (c == '\r') escapedCert += "\\r";
+          else escapedCert += c;
+      }
+      
+      // 2. Fetch Public IP
+      std::string publicIp = "127.0.0.1";
+      CURL *curl = curl_easy_init();
+      if(curl) {
+          std::string ipBuffer;
+          curl_easy_setopt(curl, CURLOPT_URL, "https://api.ipify.org");
+          curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, +[](void* ptr, size_t size, size_t nmemb, std::string* data) {
+              data->append((char*)ptr, size * nmemb);
+              return size * nmemb;
+          });
+          curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ipBuffer);
+          CURLcode res = curl_easy_perform(curl);
+          if (res == CURLE_OK) publicIp = ipBuffer;
+          
+          // 3. Post to Firebase
+          std::string pcName = config::sunshine.output_name.empty() ? "Limelight PC" : config::sunshine.output_name;
+          std::string firebaseUrl = "https://firestore.googleapis.com/v1/projects/limelight-app-ab7b8/databases/(default)/documents/host_pcs?documentId=auto_generated_id";
+          
+          // Construct JSON payload using rapidjson or manual string
+          std::string jsonPayload = "{ \"fields\": { "
+              "\"name\": { \"stringValue\": \"" + pcName + "\" }, "
+              "\"pairing_cert\": { \"stringValue\": \"" + escapedCert + "\" }, "
+              "\"public_ip_address\": { \"stringValue\": \"" + publicIp + "\" }, "
+              "\"status\": { \"stringValue\": \"Available\" } "
+              "} }";
+          
+          curl_easy_setopt(curl, CURLOPT_URL, firebaseUrl.c_str());
+          
+          struct curl_slist *headers = NULL;
+          headers = curl_slist_append(headers, "Content-Type: application/json");
+          curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+          curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonPayload.c_str());
+          
+          res = curl_easy_perform(curl);
+          if (res == CURLE_OK) {
+              BOOST_LOG(info) << "Limelight: Successfully published to Firebase!"sv;
+          } else {
+              BOOST_LOG(error) << "Limelight: Failed to publish to Firebase."sv;
+          }
+          
+          curl_slist_free_all(headers);
+          curl_easy_cleanup(curl);
+      }
+  }).detach();
+  // --- End Limelight Injection ---
+
   if (!config::sunshine.cmd.name.empty()) {
     auto fn = cmd_to_func.find(config::sunshine.cmd.name);
     if (fn == std::end(cmd_to_func)) {
@@ -270,7 +296,7 @@ int main(int argc, char *argv[]) {
   std::promise<void> session_monitor_join_thread_promise;
   auto session_monitor_join_thread_future = session_monitor_join_thread_promise.get_future();
 
-  std::jthread session_monitor_thread([&]() {
+  std::thread session_monitor_thread([&]() {
     platf::set_thread_name("session_monitor");
     session_monitor_join_thread_promise.set_value_at_thread_exit();
 
@@ -437,9 +463,9 @@ int main(int argc, char *argv[]) {
     return lifetime::desired_exit_code;
   }
 
-  std::jthread httpThread {nvhttp::start};
-  std::jthread configThread {confighttp::start};
-  std::jthread rtspThread {rtsp_stream::start};
+  std::thread httpThread {nvhttp::start};
+  std::thread configThread {confighttp::start};
+  std::thread rtspThread {rtsp_stream::start};
 
 #ifdef _WIN32
   // If we're using the default port and GameStream is enabled, warn the user
