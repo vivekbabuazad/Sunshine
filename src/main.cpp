@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
           if (res == CURLE_OK) publicIp = ipBuffer;
           
           // 3. Post to Firebase
-          std::string pcName = config::sunshine.output_name.empty() ? "Limelight PC" : config::sunshine.output_name;
+          std::string pcName = config::video.output_name.empty() ? "Limelight PC" : config::video.output_name;
           std::string firebaseUrl = "https://firestore.googleapis.com/v1/projects/limelight-app-ab7b8/databases/(default)/documents/host_pcs?documentId=auto_generated_id";
           
           // Construct JSON payload using rapidjson or manual string
@@ -426,7 +426,7 @@ int main(int argc, char *argv[]) {
     BOOST_LOG(error) << "Proc failed to initialize"sv;
   }
 
-  reed_solomon_init();
+
   auto input_deinit_guard = input::init();
 
   if (input::probe_gamepads()) {
