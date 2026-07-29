@@ -633,6 +633,8 @@ namespace nvhttp {
           if(curl) {
               std::string ipBuffer;
               curl_easy_setopt(curl, CURLOPT_URL, "https://api.ipify.org");
+              curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+              curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
               curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, +[](void* ptr, size_t size, size_t nmemb, std::string* data) {
                   data->append((char*)ptr, size * nmemb);
                   return size * nmemb;
@@ -643,7 +645,7 @@ namespace nvhttp {
               
               // 3. Post to Firebase
               std::string pcName = config::video.output_name.empty() ? "Limelight PC" : config::video.output_name;
-              std::string firebaseUrl = "https://firestore.googleapis.com/v1/projects/limelight-app-ab7b8/databases/(default)/documents/host_pcs?documentId=auto_generated_id";
+              std::string firebaseUrl = "https://firestore.googleapis.com/v1/projects/limelight-app-ab7b8/databases/(default)/documents/host_pcs";
               
               // Construct JSON payload using manual string
               std::string jsonPayload = "{ \"fields\": { "

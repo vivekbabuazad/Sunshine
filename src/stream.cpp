@@ -753,28 +753,7 @@ namespace stream {
                     proc::proc.terminate();
                     
                     #ifdef _WIN32
-                    std::jthread([]() {
-                        WNDCLASSA wc = {};
-                        wc.lpfnWndProc = DefWindowProc;
-                        wc.hInstance = GetModuleHandle(nullptr);
-                        wc.lpszClassName = "LimelightLockScreen";
-                        wc.hbrBackground = CreateSolidBrush(RGB(255, 255, 255));
-                        RegisterClassA(&wc);
-                        
-                        CreateWindowExA(
-                            WS_EX_TOPMOST | WS_EX_TOOLWINDOW, "LimelightLockScreen", "",
-                            WS_POPUP | WS_VISIBLE,
-                            0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
-                            nullptr, nullptr, wc.hInstance, nullptr
-                        );
-                        ShowCursor(FALSE);
-                        
-                        MSG msg;
-                        while (GetMessage(&msg, nullptr, 0, 0)) {
-                            TranslateMessage(&msg);
-                            DispatchMessage(&msg);
-                        }
-                    }).detach();
+                    system("rundll32.exe user32.dll,LockWorkStation");
                     #endif
                 }
             }).detach();
