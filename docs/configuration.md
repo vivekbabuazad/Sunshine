@@ -1571,6 +1571,60 @@ editing the `conf` file in a text editor. Use the examples as reference.
     </tr>
 </table>
 
+### port_starting
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Set the starting UDP/TCP port range.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            47998
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Range</td>
+        <td colspan="2">1024-65535</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            port_starting = 47998
+            @endcode</td>
+    </tr>
+</table>
+
+### port_ending
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Set the ending UDP/TCP port range.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            48010
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Range</td>
+        <td colspan="2">1024-65535</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            port_ending = 48010
+            @endcode</td>
+    </tr>
+</table>
+
 ### origin_web_ui_allowed
 
 <table>
