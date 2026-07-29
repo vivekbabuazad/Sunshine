@@ -749,12 +749,8 @@ namespace stream {
                 std::this_thread::sleep_for(std::chrono::minutes(10));
                 
                 if (connection_epoch == current_epoch) {
-                    BOOST_LOG(warning) << "10 minutes elapsed without reconnection. Terminating session and locking screen.";
+                    BOOST_LOG(warning) << "10 minutes elapsed without reconnection. Terminating session.";
                     proc::proc.terminate();
-                    
-                    #ifdef _WIN32
-                    system("rundll32.exe user32.dll,LockWorkStation");
-                    #endif
                 }
             }).detach();
           }
