@@ -10,6 +10,7 @@
 #include "config.h"
 #include "logging.h"
 #include "network.h"
+#include "stream.h"
 #include "utility.h"
 
 using namespace std::literals;
@@ -224,6 +225,17 @@ namespace net {
   std::uint16_t map_port(int port) {
     // calculate the port from the config port
     auto mapped_port = (std::uint16_t) ((int) config::sunshine.port + port);
+
+    // If custom port range is configured, override the streaming ports
+    if (config::sunshine.port_starting > 0 && config::sunshine.port_ending >= config::sunshine.port_starting + 2) {
+      if (port == stream::VIDEO_STREAM_PORT) {
+        mapped_port = config::sunshine.port_starting;
+      } else if (port == stream::CONTROL_PORT) {
+        mapped_port = config::sunshine.port_starting + 1;
+      } else if (port == stream::AUDIO_STREAM_PORT) {
+        mapped_port = config::sunshine.port_starting + 2;
+      }
+    }
 
     // Ensure port is in the range of 1024-65535
     if (mapped_port < 1024 || mapped_port > 65535) {
