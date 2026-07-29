@@ -356,6 +356,8 @@
     "port_udp": "UDP",
     "port_warning": "Exposing the Web UI to the internet is a security risk! Proceed at your own risk!",
     "port_web_ui": "Web UI",
+    "privacy_mode": "Privacy Mode",
+    "privacy_mode_desc": "Draws a solid black background screen behind the active game to mask the host PC's desktop from anyone in the same room. The stream captures the game seamlessly.",
     "qp": "Quantization Parameter",
     "qp_desc": "Some devices may not support Constant Bit Rate. For those devices, QP is used instead. Higher value means more compression, but less quality.",
     "qsv_coder": "QuickSync Coder (H264)",

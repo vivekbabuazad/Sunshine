@@ -152,6 +152,18 @@ namespace proc {
     // Ensure starting from a clean slate
     terminate();
 
+#ifdef _WIN32
+    if (config::sunshine.privacy_mode) {
+      char exePath[MAX_PATH];
+      GetModuleFileNameA(nullptr, exePath, MAX_PATH);
+      std::error_code ec;
+      _privacy_proc = platf::run_command(false, false, std::string(exePath) + " --mask", boost::filesystem::path(""), _env, nullptr, ec, nullptr);
+      if (ec) {
+        BOOST_LOG(error) << "Failed to launch Privacy Mask: "sv << ec.message();
+      }
+    }
+#endif
+
     auto iter = std::find_if(_apps.begin(), _apps.end(), [&app_id](const auto app) {
       return app.id == std::to_string(app_id);
     });
@@ -318,7 +330,11 @@ namespace proc {
   }
 
   void proc_t::terminate() {
-    std::error_code ec;
+    if (_privacy_proc.valid() && _privacy_proc.running()) {
+      std::error_code ec;
+      _privacy_proc.terminate(ec);
+    }
+    
     placebo = false;
     terminate_process_group(_process, _process_group, _app.exit_timeout);
     _process = boost::process::v1::child();

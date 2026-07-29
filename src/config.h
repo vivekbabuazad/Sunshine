@@ -371,6 +371,7 @@ namespace config {
     std::string log_file;  ///< Path to the configured log file.
     bool notify_pre_releases;  ///< Notify users about pre-release updates.
     bool system_tray;  ///< Enable the system tray integration.
+    bool privacy_mode;  ///< Enable privacy masking mode.
     std::vector<prep_cmd_t> prep_cmds;  ///< Preparation commands executed around application launch.
 
     // List of allowed origins for CSRF protection (e.g., "https://example.com,https://app.example.com")

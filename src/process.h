@@ -163,6 +163,7 @@ namespace proc {
     bool placebo {};
 
     boost::process::v1::child _process;
+    boost::process::v1::child _privacy_proc;
     boost::process::v1::group _process_group;
 
     file_t _pipe;

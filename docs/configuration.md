@@ -285,6 +285,29 @@ editing the `conf` file in a text editor. Use the examples as reference.
     </tr>
 </table>
 
+### privacy_mode
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Draws a solid black background screen behind the active game to mask the host PC's desktop from anyone in the same room. The stream captures the game seamlessly.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            false
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            privacy_mode = true
+            @endcode</td>
+    </tr>
+</table>
+
 ## Input
 
 ### controller
