@@ -423,7 +423,7 @@ namespace stream {
     } control;
 
     std::uint32_t launch_session_id;
-
+    std::string client_cert;
     safe::mail_raw_t::event_t<bool> shutdown_event;
     safe::signal_t controlEnd;
 
@@ -1965,6 +1965,10 @@ namespace stream {
       return session.state.load(std::memory_order_relaxed);
     }
 
+    const std::string &client_cert(session_t &session) {
+      return session.client_cert;
+    }
+
     void stop(session_t &session) {
       while_starting_do_nothing(session.state);
       auto expected = state_e::RUNNING;
@@ -2072,6 +2076,7 @@ namespace stream {
 
       session->shutdown_event = mail->event<bool>(mail::shutdown);
       session->launch_session_id = launch_session.id;
+      session->client_cert = launch_session.client_cert;
 
       session->config = config;
 
