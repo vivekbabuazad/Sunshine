@@ -28,8 +28,9 @@
 #include "process.h"
 #include "system_tray.h"
 #include "upnp.h"
+#include "input.h"
+#include "video.h"
 #include <rs.h>
-
 extern "C" {
 
 }
