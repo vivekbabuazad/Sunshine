@@ -158,7 +158,8 @@ namespace proc {
       char exePath[MAX_PATH];
       GetModuleFileNameA(nullptr, exePath, MAX_PATH);
       std::error_code ec;
-      _privacy_proc = platf::run_command(false, false, "\"" + std::string(exePath) + "\" --mask", boost::filesystem::path(""), _env, nullptr, ec, nullptr);
+      boost::filesystem::path working_dir;
+      _privacy_proc = platf::run_command(false, false, "\"" + std::string(exePath) + "\" --mask", working_dir, _env, nullptr, ec, nullptr);
       if (ec) {
         BOOST_LOG(error) << "Failed to launch Privacy Mask: "sv << ec.message();
       }
