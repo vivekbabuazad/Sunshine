@@ -7,6 +7,7 @@
 #include <fstream>
 #include <future>
 #include <queue>
+#include <thread>
 
 // lib includes
 #include <boost/endian/arithmetic.hpp>
@@ -744,7 +745,7 @@ namespace stream {
           {
             int current_epoch = ++connection_epoch;
             
-            std::jthread([current_epoch]() {
+            std::thread([current_epoch]() {
                 BOOST_LOG(info) << "10-minute session disconnect timer started.";
                 std::this_thread::sleep_for(std::chrono::minutes(10));
                 
