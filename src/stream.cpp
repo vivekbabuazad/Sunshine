@@ -8,6 +8,7 @@
 #include <future>
 #include <queue>
 #include <thread>
+#include <atomic>
 
 // lib includes
 #include <boost/endian/arithmetic.hpp>
@@ -52,6 +53,14 @@ extern "C" {
           if (bBlock) return 1;
       }
       return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
+  }
+  
+  static LRESULT CALLBACK PrivacyWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+      if (uMsg == WM_CLOSE) {
+          PostQuitMessage(0);
+          return 0;
+      }
+      return DefWindowProc(hwnd, uMsg, wParam, lParam);
   }
 #endif
 
@@ -763,13 +772,7 @@ namespace stream {
           if (config::sunshine.privacy_mode) {
               std::thread([]() {
                   WNDCLASSA wc = {};
-                  wc.lpfnWndProc = [](HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) -> LRESULT {
-                      if (uMsg == WM_CLOSE) {
-                          PostQuitMessage(0);
-                          return 0;
-                      }
-                      return DefWindowProc(hwnd, uMsg, wParam, lParam);
-                  };
+                  wc.lpfnWndProc = PrivacyWndProc;
                   wc.hInstance = GetModuleHandle(nullptr);
                   wc.lpszClassName = "LimelightPrivacyMask";
                   wc.hbrBackground = CreateSolidBrush(RGB(0, 0, 0));
