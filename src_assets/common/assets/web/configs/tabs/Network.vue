@@ -15,6 +15,20 @@ const defaultMoonlightPort = 47989
 
 const config = ref(props.config)
 const effectivePort = computed(() => +config.value?.port ?? defaultMoonlightPort)
+
+const pcNumber = computed({
+  get() {
+    return Math.max(1, Math.floor((effectivePort.value - 47989) / 1000) + 1);
+  },
+  set(newValue) {
+    const val = Math.max(1, Math.floor(newValue));
+    if (config.value) {
+      config.value.port = 47989 + (val - 1) * 1000;
+      config.value.port_starting = 0;
+      config.value.port_ending = 0;
+    }
+  }
+})
 </script>
 
 <template>
@@ -44,92 +58,22 @@ const effectivePort = computed(() => +config.value?.port ?? defaultMoonlightPort
       <div class="form-text">{{ $t('config.bind_address_desc') }}</div>
     </div>
 
-    <!-- Port family -->
+    <!-- PC Number -->
     <div class="mb-3">
-      <label for="port" class="form-label">{{ $t('config.port') }}</label>
-      <input type="number" min="1029" max="65514" class="form-control" id="port" :placeholder="defaultMoonlightPort"
-             v-model="config.port" />
-      <div class="form-text">{{ $t('config.port_desc') }}</div>
-      <!-- Add warning if any port is less than 1024 -->
-      <div class="alert alert-danger" v-if="(+effectivePort - 5) < 1024">
-        <TriangleAlert :size="20" /> {{ $t('config.port_alert_1') }}
-      </div>
-      <!-- Add warning if any port is above 65535 -->
-      <div class="alert alert-danger" v-if="(+effectivePort + 21) > 65535">
-        <TriangleAlert :size="20" /> {{ $t('config.port_alert_2') }}
-      </div>
-    </div>
-
-    <!-- Starting Port -->
-    <div class="mb-3">
-      <label for="port_starting" class="form-label">{{ $t('config.port_starting') }}</label>
-      <input type="number" min="1024" max="65535" class="form-control" id="port_starting"
-             v-model="config.port_starting" />
-      <div class="form-text">{{ $t('config.port_starting_desc') || 'Starting port for sequential assignment of streaming ports (RTSP, Video, Control, Audio)' }}</div>
-    </div>
-
-    <!-- Ending Port -->
-    <div class="mb-3">
-      <label for="port_ending" class="form-label">{{ $t('config.port_ending') }}</label>
-      <input type="number" min="1024" max="65535" class="form-control" id="port_ending"
-             v-model="config.port_ending" />
-      <div class="form-text">{{ $t('config.port_ending_desc') || 'Ending port for sequential assignment' }}</div>
+      <label for="pc_number" class="form-label">PC Number</label>
+      <input type="number" min="1" max="99" class="form-control" id="pc_number" v-model="pcNumber" />
+      <div class="form-text">Enter the unique number of this PC (e.g., 1, 2, 3). This automatically configures all ports.</div>
     </div>
     
-    <div class="mb-3">
-      <!-- Create a port table for the various ports needed by Sunshine -->
-      <table class="table">
-        <thead>
-        <tr>
-          <th scope="col">{{ $t('config.port_protocol') }}</th>
-          <th scope="col">{{ $t('config.port_port') }}</th>
-          <th scope="col">{{ $t('config.port_note') }}</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <!-- HTTPS -->
-          <td>{{ $t('config.port_tcp') }}</td>
-          <td>{{+effectivePort - 5}}</td>
-          <td></td>
-        </tr>
-        <tr>
-          <!-- HTTP -->
-          <td>{{ $t('config.port_tcp') }}</td>
-          <td>{{+effectivePort}}</td>
-          <td>
-            <div class="alert alert-primary" role="alert" v-if="+effectivePort !== defaultMoonlightPort">
-              <Info :size="20" /> {{ $t('config.port_http_port_note') }}
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <!-- Web UI -->
-          <td>{{ $t('config.port_tcp') }}</td>
-          <td>{{+effectivePort + 1}}</td>
-          <td>{{ $t('config.port_web_ui') }}</td>
-        </tr>
-        <tr>
-          <!-- RTSP -->
-          <td>{{ $t('config.port_tcp') }}</td>
-          <td>{{ config.port_starting > 0 ? config.port_starting + 3 : +effectivePort + 21}}</td>
-          <td></td>
-        </tr>
-        <tr>
-          <!-- Video, Control, Audio -->
-          <td>{{ $t('config.port_udp') }}</td>
-          <td>{{ config.port_starting > 0 ? `${config.port_starting} - ${config.port_starting + 2}` : `${+effectivePort + 9} - ${+effectivePort + 11}`}}</td>
-          <td></td>
-        </tr>
-        <!--            <tr>-->
-        <!--              &lt;!&ndash; Mic &ndash;&gt;-->
-        <!--              <td>UDP</td>-->
-        <!--              <td>{{+effectivePort + 13}}</td>-->
-        <!--              <td></td>-->
-        <!--            </tr>-->
-        </tbody>
-      </table>
-      <!-- add warning about exposing web ui to the internet -->
+    <div class="alert alert-success mt-3 mb-4">
+      <h4 class="alert-heading">Router Port Forwarding Instructions</h4>
+      <p>Please log into your TP-Link router and forward the following port range to this PC's local IP address:</p>
+      <hr>
+      <p class="mb-0">
+        <strong>Forward Ports:</strong> {{ effectivePort - 5 }} - {{ effectivePort + 21 }} <br/>
+        <strong>Protocol:</strong> All (TCP & UDP)
+      </p>
+    </div>
       <div class="alert alert-warning" v-if="config.origin_web_ui_allowed === 'wan'">
         <TriangleAlert :size="20" /> {{ $t('config.port_warning') }}
       </div>
