@@ -809,7 +809,7 @@ namespace stream {
                   RegisterClassA(&wc);
                   
                   HWND hwnd = CreateWindowExA(
-                      WS_EX_TOPMOST | WS_EX_TOOLWINDOW, "LimelightPrivacyMask", "",
+                      WS_EX_TOOLWINDOW, "LimelightPrivacyMask", "",
                       WS_POPUP | WS_VISIBLE,
                       0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
                       nullptr, nullptr, wc.hInstance, nullptr
