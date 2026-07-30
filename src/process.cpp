@@ -32,7 +32,10 @@
 #include "utility.h"
 
 #ifdef _WIN32
+  #define WIN32_LEAN_AND_MEAN
+  #define NOMINMAX
   #include <windows.h>
+  #undef ERROR
   // from_utf8() string conversion function
   #include "platform/windows/utf_utils.h"
 
@@ -332,8 +335,8 @@ namespace proc {
   }
 
   void proc_t::terminate() {
+    std::error_code ec;
     if (_privacy_proc.valid() && _privacy_proc.running()) {
-      std::error_code ec;
       _privacy_proc.terminate(ec);
     }
     
