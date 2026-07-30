@@ -10,6 +10,7 @@
 #include "config.h"
 #include "logging.h"
 #include "network.h"
+#include "rtsp.h"
 #include "stream.h"
 #include "utility.h"
 
@@ -234,6 +235,8 @@ namespace net {
         mapped_port = config::sunshine.port_starting + 1;
       } else if (port == stream::AUDIO_STREAM_PORT) {
         mapped_port = config::sunshine.port_starting + 2;
+      } else if (port == rtsp_stream::RTSP_SETUP_PORT) {
+        mapped_port = config::sunshine.port_starting + 3;
       }
     }
 
