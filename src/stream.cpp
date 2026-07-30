@@ -35,6 +35,26 @@ extern "C" {
 #include "thread_safe.h"
 #include "utility.h"
 
+#ifdef _WIN32
+  #define WIN32_LEAN_AND_MEAN
+  #define NOMINMAX
+  #include <windows.h>
+  std::atomic<HWND> privacy_hwnd{nullptr};
+  HHOOK hKeyboardHook = nullptr;
+  LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
+      if (nCode == HC_ACTION) {
+          KBDLLHOOKSTRUCT *p = (KBDLLHOOKSTRUCT *)lParam;
+          bool bBlock = false;
+          if (p->vkCode == VK_TAB && (p->flags & LLKHF_ALTDOWN)) bBlock = true;
+          if (p->vkCode == VK_ESCAPE && (p->flags & LLKHF_ALTDOWN)) bBlock = true;
+          if (p->vkCode == VK_LWIN || p->vkCode == VK_RWIN) bBlock = true;
+          if (p->vkCode == VK_ESCAPE && (GetAsyncKeyState(VK_CONTROL) & 0x8000)) bBlock = true;
+          if (bBlock) return 1;
+      }
+      return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
+  }
+#endif
+
 constexpr int IDX_START_A = 0;  ///< Control-stream message index for the first stream-start packet.
 constexpr int IDX_START_B = 1;  ///< Control-stream message index for the second stream-start packet.
 constexpr int IDX_INVALIDATE_REF_FRAMES = 2;  ///< Control-stream message index for invalidate ref frames.
@@ -739,9 +759,52 @@ namespace stream {
         case ENET_EVENT_TYPE_CONNECT:
           BOOST_LOG(info) << "CLIENT CONNECTED"sv;
           connection_epoch++;
+#ifdef _WIN32
+          if (config::sunshine.privacy_mode) {
+              std::thread([]() {
+                  WNDCLASSA wc = {};
+                  wc.lpfnWndProc = [](HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) -> LRESULT {
+                      if (uMsg == WM_CLOSE) {
+                          PostQuitMessage(0);
+                          return 0;
+                      }
+                      return DefWindowProc(hwnd, uMsg, wParam, lParam);
+                  };
+                  wc.hInstance = GetModuleHandle(nullptr);
+                  wc.lpszClassName = "LimelightPrivacyMask";
+                  wc.hbrBackground = CreateSolidBrush(RGB(0, 0, 0));
+                  RegisterClassA(&wc);
+                  
+                  HWND hwnd = CreateWindowExA(
+                      WS_EX_TOPMOST | WS_EX_TOOLWINDOW, "LimelightPrivacyMask", "",
+                      WS_POPUP | WS_VISIBLE,
+                      0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
+                      nullptr, nullptr, wc.hInstance, nullptr
+                  );
+                  privacy_hwnd.store(hwnd);
+                  ShowCursor(FALSE);
+                  
+                  hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(nullptr), 0);
+                  
+                  MSG msg;
+                  while (GetMessage(&msg, nullptr, 0, 0)) {
+                      TranslateMessage(&msg);
+                      DispatchMessage(&msg);
+                  }
+                  
+                  if (hKeyboardHook) UnhookWindowsHookEx(hKeyboardHook);
+                  privacy_hwnd.store(nullptr);
+              }).detach();
+          }
+#endif
           break;
         case ENET_EVENT_TYPE_DISCONNECT:
           BOOST_LOG(info) << "CLIENT DISCONNECTED"sv;
+#ifdef _WIN32
+          if (privacy_hwnd.load() != nullptr) {
+              PostMessageA(privacy_hwnd.load(), WM_CLOSE, 0, 0);
+          }
+#endif
           {
             int current_epoch = ++connection_epoch;
             

@@ -187,29 +187,6 @@ int main(int argc, char *argv[]) {
 
   lifetime::argv = argv;
 
-#ifdef _WIN32
-  if (argc > 1 && std::string_view(argv[1]) == "--mask") {
-    WNDCLASSA wc = {};
-    wc.lpfnWndProc = DefWindowProc;
-    wc.hInstance = GetModuleHandle(nullptr);
-    wc.lpszClassName = "SunshinePrivacyMask";
-    wc.hbrBackground = CreateSolidBrush(RGB(0, 0, 0));
-    RegisterClassA(&wc);
-    HWND hwnd = CreateWindowExA(WS_EX_TOOLWINDOW, "SunshinePrivacyMask", "",
-                                WS_POPUP | WS_VISIBLE, 
-                                GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN), 
-                                GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN),
-                                nullptr, nullptr, wc.hInstance, nullptr);
-    SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-    ShowCursor(FALSE);
-    MSG msg;
-    while (GetMessage(&msg, nullptr, 0, 0)) {
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
-    }
-    return 0;
-  }
-#endif
 
   task_pool_util::TaskPool::task_id_t force_shutdown = nullptr;
 
