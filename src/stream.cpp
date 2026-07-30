@@ -44,9 +44,26 @@ extern "C" {
     #define NOMINMAX
   #endif
   #include <windows.h>
+  
+  /**
+   * @brief Global handle for the Privacy Mask window.
+   */
   std::atomic<HWND> privacy_hwnd{nullptr};
+  
+  /**
+   * @brief Global handle for the Low-Level Keyboard Hook.
+   */
   HHOOK hKeyboardHook = nullptr;
-  LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
+  
+  /**
+   * @brief Low-Level Keyboard Hook procedure to block specific system keys during Privacy Mode.
+   *
+   * @param nCode Hook code.
+   * @param wParam Message identifier.
+   * @param lParam Pointer to a KBDLLHOOKSTRUCT structure.
+   * @return Return value of CallNextHookEx or 1 to block the event.
+   */
+  static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
       if (nCode == HC_ACTION) {
           KBDLLHOOKSTRUCT *p = (KBDLLHOOKSTRUCT *)lParam;
           bool bBlock = false;
@@ -59,6 +76,15 @@ extern "C" {
       return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
   }
   
+  /**
+   * @brief Window procedure for the Privacy Mask window.
+   *
+   * @param hwnd Window handle.
+   * @param uMsg Message identifier.
+   * @param wParam First message parameter.
+   * @param lParam Second message parameter.
+   * @return The result of the message processing.
+   */
   static LRESULT CALLBACK PrivacyWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       if (uMsg == WM_CLOSE) {
           PostQuitMessage(0);
