@@ -58,6 +58,25 @@ const effectivePort = computed(() => +config.value?.port ?? defaultMoonlightPort
       <div class="alert alert-danger" v-if="(+effectivePort + 21) > 65535">
         <TriangleAlert :size="20" /> {{ $t('config.port_alert_2') }}
       </div>
+    </div>
+
+    <!-- Starting Port -->
+    <div class="mb-3">
+      <label for="port_starting" class="form-label">{{ $t('config.port_starting') }}</label>
+      <input type="number" min="1024" max="65535" class="form-control" id="port_starting"
+             v-model="config.port_starting" />
+      <div class="form-text">{{ $t('config.port_starting_desc') || 'Starting port for sequential assignment of streaming ports (RTSP, Video, Control, Audio)' }}</div>
+    </div>
+
+    <!-- Ending Port -->
+    <div class="mb-3">
+      <label for="port_ending" class="form-label">{{ $t('config.port_ending') }}</label>
+      <input type="number" min="1024" max="65535" class="form-control" id="port_ending"
+             v-model="config.port_ending" />
+      <div class="form-text">{{ $t('config.port_ending_desc') || 'Ending port for sequential assignment' }}</div>
+    </div>
+    
+    <div class="mb-3">
       <!-- Create a port table for the various ports needed by Sunshine -->
       <table class="table">
         <thead>
@@ -93,13 +112,13 @@ const effectivePort = computed(() => +config.value?.port ?? defaultMoonlightPort
         <tr>
           <!-- RTSP -->
           <td>{{ $t('config.port_tcp') }}</td>
-          <td>{{+effectivePort + 21}}</td>
+          <td>{{ config.port_starting > 0 ? config.port_starting + 3 : +effectivePort + 21}}</td>
           <td></td>
         </tr>
         <tr>
           <!-- Video, Control, Audio -->
           <td>{{ $t('config.port_udp') }}</td>
-          <td>{{+effectivePort + 9}} - {{+effectivePort + 11}}</td>
+          <td>{{ config.port_starting > 0 ? `${config.port_starting} - ${config.port_starting + 2}` : `${+effectivePort + 9} - ${+effectivePort + 11}`}}</td>
           <td></td>
         </tr>
         <!--            <tr>-->
