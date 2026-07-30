@@ -74,9 +74,8 @@ const pcNumber = computed({
         <strong>Protocol:</strong> All (TCP & UDP)
       </p>
     </div>
-      <div class="alert alert-warning" v-if="config.origin_web_ui_allowed === 'wan'">
-        <TriangleAlert :size="20" /> {{ $t('config.port_warning') }}
-      </div>
+    <div class="alert alert-warning" v-if="config.origin_web_ui_allowed === 'wan'">
+      <TriangleAlert :size="20" /> {{ $t('config.port_warning') }}
     </div>
 
     <!-- Origin Web UI Allowed -->
