@@ -251,70 +251,7 @@ int main(int argc, char *argv[]) {
   config::log_config_settings(config::modified_config_settings, false);
   config::modified_config_settings.clear();
 
-  // --- Limelight Firebase Auto-Publish Injection ---
-  std::thread([]() {
-      BOOST_LOG(info) << "Limelight: Starting Firebase auto-publish thread..."sv;
-      
-      // 1. Read the Certificate
-      auto cert_path = platf::appdata() / "cacert.pem";
-      std::ifstream certFile(cert_path);
-      std::stringstream certStream;
-      certStream << certFile.rdbuf();
-      std::string certString = certStream.str();
-      
-      // Escape newlines for JSON payload
-      std::string escapedCert;
-      for (char c : certString) {
-          if (c == '\n') escapedCert += "\\n";
-          else if (c == '\r') escapedCert += "\\r";
-          else escapedCert += c;
-      }
-      
-      // 2. Fetch Public IP
-      std::string publicIp = "127.0.0.1";
-      CURL *curl = curl_easy_init();
-      if(curl) {
-          std::string ipBuffer;
-          curl_easy_setopt(curl, CURLOPT_URL, "https://api.ipify.org");
-          curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, +[](void* ptr, size_t size, size_t nmemb, std::string* data) {
-              data->append((char*)ptr, size * nmemb);
-              return size * nmemb;
-          });
-          curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ipBuffer);
-          CURLcode res = curl_easy_perform(curl);
-          if (res == CURLE_OK) publicIp = ipBuffer;
-          
-          // 3. Post to Firebase
-          std::string pcName = config::video.output_name.empty() ? "Limelight PC" : config::video.output_name;
-          std::string firebaseUrl = "https://firestore.googleapis.com/v1/projects/limelight-app-ab7b8/databases/(default)/documents/host_pcs?documentId=auto_generated_id";
-          
-          // Construct JSON payload using rapidjson or manual string
-          std::string jsonPayload = "{ \"fields\": { "
-              "\"name\": { \"stringValue\": \"" + pcName + "\" }, "
-              "\"pairing_cert\": { \"stringValue\": \"" + escapedCert + "\" }, "
-              "\"public_ip_address\": { \"stringValue\": \"" + publicIp + "\" }, "
-              "\"status\": { \"stringValue\": \"Available\" } "
-              "} }";
-          
-          curl_easy_setopt(curl, CURLOPT_URL, firebaseUrl.c_str());
-          
-          struct curl_slist *headers = NULL;
-          headers = curl_slist_append(headers, "Content-Type: application/json");
-          curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-          curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonPayload.c_str());
-          
-          res = curl_easy_perform(curl);
-          if (res == CURLE_OK) {
-              BOOST_LOG(info) << "Limelight: Successfully published to Firebase!"sv;
-          } else {
-              BOOST_LOG(error) << "Limelight: Failed to publish to Firebase."sv;
-          }
-          
-          curl_slist_free_all(headers);
-          curl_easy_cleanup(curl);
-      }
-  }).detach();
-  // --- End Limelight Injection ---
+
 
   if (!config::sunshine.cmd.name.empty()) {
     auto fn = cmd_to_func.find(config::sunshine.cmd.name);
