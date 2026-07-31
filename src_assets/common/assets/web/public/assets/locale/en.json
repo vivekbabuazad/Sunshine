@@ -379,6 +379,8 @@
     "stream_audio_desc": "Whether to stream audio or not. Disabling this can be useful for streaming headless displays as second monitors.",
     "sunshine_name": "Sunshine Name",
     "sunshine_name_desc": "The name displayed by Moonlight. If not specified, the PC's hostname is used",
+    "twitch_stream_key": "Twitch Stream Key",
+    "twitch_stream_key_desc": "Enter your Twitch Stream Key to automatically broadcast games to Twitch when a client connects. Leave blank to disable.",
     "sw_preset": "SW Presets",
     "sw_preset_desc": "Optimize the trade-off between encoding speed (encoded frames per second) and compression efficiency (quality per bit in the bitstream). Defaults to superfast.",
     "sw_preset_fast": "fast",

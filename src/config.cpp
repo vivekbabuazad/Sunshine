@@ -1831,7 +1831,7 @@ namespace config {
 
     string_restricted_f(vars, "address_family", sunshine.address_family, {"ipv4"sv, "both"sv});
     string_f(vars, "bind_address", sunshine.bind_address);
-
+    string_f(vars, "twitch_stream_key", sunshine.twitch_stream_key);
     bool upnp = false;
     bool_f(vars, "upnp"s, upnp);
 

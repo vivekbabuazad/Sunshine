@@ -367,6 +367,8 @@ namespace config {
     std::uint16_t port_ending;  ///< Ending UDP/TCP port range.
     std::string address_family;  ///< Address family requested for listening sockets.
     std::string bind_address;  ///< Local address Sunshine should bind to.
+    
+    std::string twitch_stream_key;  ///< Twitch stream key for automatic FFmpeg broadcasting
 
     std::string log_file;  ///< Path to the configured log file.
     bool notify_pre_releases;  ///< Notify users about pre-release updates.

@@ -72,6 +72,14 @@ function removeCmd(index) {
       <div class="form-text">{{ $t('config.sunshine_name_desc') }}</div>
     </div>
 
+    <!-- Twitch Stream Key -->
+    <div class="mb-3">
+      <label for="twitch_stream_key" class="form-label">{{ $t('config.twitch_stream_key') }}</label>
+      <input type="password" class="form-control" id="twitch_stream_key" placeholder="live_XXXXXXXXXX"
+             v-model="config.twitch_stream_key" />
+      <div class="form-text">{{ $t('config.twitch_stream_key_desc') }}</div>
+    </div>
+
     <!-- Log Level -->
     <div class="mb-3">
       <label for="min_log_level" class="form-label">{{ $t('config.min_log_level') }}</label>

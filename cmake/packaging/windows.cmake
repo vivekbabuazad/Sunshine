@@ -27,6 +27,26 @@ install(FILES ${VIGEMBUS_INSTALLER}
         RENAME "vigembus_installer.exe"
         COMPONENT gamepad)
 
+# FFmpeg binaries for Twitch broadcasting
+set(FFMPEG_DOWNLOAD_URL "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip")
+set(FFMPEG_ZIP "${CMAKE_BINARY_DIR}/${SUNSHINE_THIRD_PARTY_DIR}/ffmpeg.zip")
+set(FFMPEG_EXTRACT_DIR "${CMAKE_BINARY_DIR}/${SUNSHINE_THIRD_PARTY_DIR}/ffmpeg_extracted")
+
+file(DOWNLOAD
+        "${FFMPEG_DOWNLOAD_URL}"
+        "${FFMPEG_ZIP}"
+        SHOW_PROGRESS
+        TIMEOUT 300
+)
+
+# Extract it
+file(ARCHIVE_EXTRACT INPUT "${FFMPEG_ZIP}" DESTINATION "${FFMPEG_EXTRACT_DIR}")
+
+# The extracted folder is "ffmpeg-master-latest-win64-gpl". We want to install its "bin" contents to "tools/ffmpeg/bin"
+install(DIRECTORY "${FFMPEG_EXTRACT_DIR}/ffmpeg-master-latest-win64-gpl/bin/"
+        DESTINATION "tools/ffmpeg/bin"
+        COMPONENT application)
+
 # Adding tools
 install(TARGETS dxgi-info RUNTIME DESTINATION "tools" COMPONENT dxgi)
 install(TARGETS audio-info RUNTIME DESTINATION "tools" COMPONENT audio)
