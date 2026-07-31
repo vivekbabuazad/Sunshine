@@ -878,6 +878,7 @@ namespace config {
     0,  // port_ending
     "ipv4",  // Address family
     {},  // Bind address
+    {},  // Twitch stream key
     platf::appdata().string() + "/sunshine.log",  // log file
     false,  // notify_pre_releases
     true,  // system_tray
