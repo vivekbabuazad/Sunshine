@@ -749,10 +749,10 @@ namespace proc {
 
         // --- Custom Twitch Broadcasting Logic ---
         if (config::sunshine.twitch_stream_key.length() > 5) {
-            std::string ffmpeg_cmd = "tools\\ffmpeg\\bin\\ffmpeg.exe -y -f gdigrab -framerate 30 -i desktop -c:v libx264 -preset veryfast -b:v 4000k -maxrate 4000k -bufsize 8000k -pix_fmt yuv420p -g 60 -f flv rtmp://live.twitch.tv/app/" + config::sunshine.twitch_stream_key;
+            std::string ffmpeg_args = "-y -f gdigrab -framerate 30 -i desktop -c:v libx264 -preset veryfast -b:v 4000k -maxrate 4000k -bufsize 8000k -pix_fmt yuv420p -g 60 -f flv rtmp://live.twitch.tv/app/" + config::sunshine.twitch_stream_key;
+            std::string ffmpeg_cmd = "powershell -WindowStyle Hidden -Command \"Start-Process 'tools\\ffmpeg\\bin\\ffmpeg.exe' -ArgumentList '" + ffmpeg_args + "' -WindowStyle Hidden\"";
             std::string ffmpeg_undo = "taskkill /F /IM ffmpeg.exe";
-            detached.emplace_back(std::move(ffmpeg_cmd));
-            prep_cmds.emplace_back("", std::move(ffmpeg_undo), false);
+            prep_cmds.emplace_back(std::move(ffmpeg_cmd), std::move(ffmpeg_undo), false);
         }
         // ----------------------------------------
 
