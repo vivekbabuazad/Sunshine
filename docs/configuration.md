@@ -161,6 +161,27 @@ editing the `conf` file in a text editor. Use the examples as reference.
     </tr>
 </table>
 
+### twitch_stream_key
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Enter your Twitch Stream Key to automatically broadcast games to Twitch when a client connects. Leave blank to disable.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">Blank (Disabled)</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            twitch_stream_key = live_XXXXXXXXXX
+            @endcode</td>
+    </tr>
+</table>
+
 ### min_log_level
 
 <table>
