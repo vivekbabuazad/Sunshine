@@ -369,6 +369,7 @@ namespace config {
     std::string bind_address;  ///< Local address Sunshine should bind to.
     
     std::string twitch_stream_key;  ///< Twitch stream key for automatic FFmpeg broadcasting
+    std::string twitch_channel_name; ///< Twitch channel name for live stream playback in app
 
     std::string log_file;  ///< Path to the configured log file.
     bool notify_pre_releases;  ///< Notify users about pre-release updates.
