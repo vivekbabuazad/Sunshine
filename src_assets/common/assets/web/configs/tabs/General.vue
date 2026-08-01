@@ -80,13 +80,6 @@ function removeCmd(index) {
       <div class="form-text">{{ $t('config.twitch_stream_key_desc') }}</div>
     </div>
 
-    <div class="mb-3">
-      <label for="twitch_channel_name" class="form-label">Twitch Channel Name</label>
-      <input type="text" class="form-control" id="twitch_channel_name" placeholder="monstercat"
-             v-model="config.twitch_channel_name" />
-      <div class="form-text">Your Twitch channel name (e.g. if your URL is twitch.tv/monstercat, type monstercat). This tells the Android app which live video to embed.</div>
-    </div>
-
     <!-- Log Level -->
     <div class="mb-3">
       <label for="min_log_level" class="form-label">{{ $t('config.min_log_level') }}</label>
