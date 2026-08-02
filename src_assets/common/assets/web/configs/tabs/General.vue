@@ -80,6 +80,14 @@ function removeCmd(index) {
       <div class="form-text">{{ $t('config.twitch_stream_key_desc') }}</div>
     </div>
 
+    <!-- Privacy Mode -->
+    <Checkbox class="mb-3"
+              id="privacy_mode"
+              locale-prefix="config"
+              v-model="config.privacy_mode"
+              default="disabled"
+    ></Checkbox>
+
     <!-- Log Level -->
     <div class="mb-3">
       <label for="min_log_level" class="form-label">{{ $t('config.min_log_level') }}</label>
