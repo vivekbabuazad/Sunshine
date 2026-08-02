@@ -10,6 +10,8 @@
 #include <set>
 #include <sstream>
 #include <vector>
+#include <thread>
+#include <chrono>
 
 // lib includes
 #include <boost/algorithm/string.hpp>

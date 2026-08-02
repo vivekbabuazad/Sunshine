@@ -282,7 +282,7 @@ namespace proc {
         return -1;
       }
       if (config::sunshine.force_fullscreen) {
-        platf::force_fullscreen_for_process_group(_process_group.native_handle());
+        platf::force_fullscreen_for_process_group((std::uintptr_t) _process_group.native_handle());
       }
     }
 
