@@ -883,6 +883,7 @@ namespace config {
     false,  // notify_pre_releases
     true,  // system_tray
     false,  // privacy_mode
+    false,  // force_fullscreen
     {},  // prep commands
   };
 
@@ -1810,6 +1811,7 @@ namespace config {
     bool_f(vars, "notify_pre_releases", sunshine.notify_pre_releases);
     bool_f(vars, "system_tray", sunshine.system_tray);
     bool_f(vars, "privacy_mode", sunshine.privacy_mode);
+    bool_f(vars, "force_fullscreen", sunshine.force_fullscreen);
 
     int port = sunshine.port;
     int_between_f(vars, "port"s, port, {1024 + nvhttp::PORT_HTTPS, 65535 - rtsp_stream::RTSP_SETUP_PORT});

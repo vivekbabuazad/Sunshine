@@ -305,6 +305,10 @@ namespace platf {
     }
   }
 
+  void force_fullscreen_for_process_group(std::uintptr_t native_handle) {
+    // Not implemented on macOS
+  }
+
   bool process_group_running(std::uintptr_t native_handle) {
     return waitpid(-((pid_t) native_handle), nullptr, WNOHANG) >= 0;
   }

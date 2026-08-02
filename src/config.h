@@ -374,6 +374,7 @@ namespace config {
     bool notify_pre_releases;  ///< Notify users about pre-release updates.
     bool system_tray;  ///< Enable the system tray integration.
     bool privacy_mode;  ///< Enable privacy masking mode.
+    bool force_fullscreen; ///< Automatically maximize windowed games to borderless fullscreen.
     std::vector<prep_cmd_t> prep_cmds;  ///< Preparation commands executed around application launch.
 
     // List of allowed origins for CSRF protection (e.g., "https://example.com,https://app.example.com")

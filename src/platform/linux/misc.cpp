@@ -581,13 +581,24 @@ namespace platf {
   }
 
   bool request_process_group_exit(std::uintptr_t native_handle) {
-    if (kill(-((pid_t) native_handle), SIGTERM) == 0 || errno == ESRCH) {
-      BOOST_LOG(debug) << "Successfully sent SIGTERM to process group: "sv << native_handle;
-      return true;
-    } else {
-      BOOST_LOG(warning) << "Unable to send SIGTERM to process group ["sv << native_handle << "]: "sv << errno;
+    auto pgid = (pid_t) native_handle;
+
+    if (pgid <= 1) {
+      // Don't kill init or arbitrary processes!
       return false;
     }
+
+    if (kill(-pgid, SIGTERM) == 0) {
+      BOOST_LOG(debug) << "Sent SIGTERM to process group: "sv << pgid;
+      return true;
+    }
+
+    BOOST_LOG(warning) << "Unable to send SIGTERM to process group ["sv << native_handle << "]: "sv << errno;
+    return false;
+  }
+
+  void force_fullscreen_for_process_group(std::uintptr_t native_handle) {
+    // Not implemented on Linux
   }
 
   bool process_group_running(std::uintptr_t native_handle) {

@@ -88,6 +88,14 @@ function removeCmd(index) {
               default="disabled"
     ></Checkbox>
 
+    <!-- Force Fullscreen -->
+    <Checkbox class="mb-3"
+              id="force_fullscreen"
+              locale-prefix="config"
+              v-model="config.force_fullscreen"
+              default="disabled"
+    ></Checkbox>
+
     <!-- Log Level -->
     <div class="mb-3">
       <label for="min_log_level" class="form-label">{{ $t('config.min_log_level') }}</label>

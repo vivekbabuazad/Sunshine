@@ -1397,6 +1397,66 @@ namespace platf {
     return enum_ctx.requested_exit;
   }
 
+  static BOOL CALLBACK prgrp_enum_windows_fullscreen(HWND hwnd, LPARAM lParam) {
+    auto enum_ctx = (enum_wnd_context_t *) lParam;
+    DWORD wnd_process_id;
+    if (!GetWindowThreadProcessId(hwnd, &wnd_process_id)) {
+      return TRUE;
+    }
+    if (enum_ctx->process_ids.find(wnd_process_id) != enum_ctx->process_ids.end()) {
+      if (IsWindowVisible(hwnd) && GetWindow(hwnd, GW_OWNER) == nullptr) {
+        LONG style = GetWindowLongW(hwnd, GWL_STYLE);
+        if (style & WS_CAPTION) {
+          SetWindowLongW(hwnd, GWL_STYLE, style & ~WS_CAPTION & ~WS_THICKFRAME);
+          int cx = GetSystemMetrics(SM_CXSCREEN);
+          int cy = GetSystemMetrics(SM_CYSCREEN);
+          SetWindowPos(hwnd, HWND_TOP, 0, 0, cx, cy, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+          BOOST_LOG(info) << "Forced borderless fullscreen for PID: "sv << wnd_process_id;
+          enum_ctx->requested_exit = true; // signal success
+          return FALSE; // stop enum
+        }
+      }
+    }
+    return TRUE;
+  }
+
+  void force_fullscreen_for_process_group(std::uintptr_t native_handle) {
+    std::thread([native_handle]() {
+      auto job_handle = (HANDLE) native_handle;
+      for (int attempt = 0; attempt < 20; ++attempt) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        
+        DWORD required_length = sizeof(JOBOBJECT_BASIC_PROCESS_ID_LIST);
+        auto process_id_list = (PJOBOBJECT_BASIC_PROCESS_ID_LIST) calloc(1, required_length);
+        auto fg = util::fail_guard([&process_id_list]() {
+          free(process_id_list);
+        });
+        
+        bool success;
+        while (!(success = QueryInformationJobObject(job_handle, JobObjectBasicProcessIdList, process_id_list, required_length, &required_length)) &&
+               GetLastError() == ERROR_MORE_DATA) {
+          free(process_id_list);
+          process_id_list = (PJOBOBJECT_BASIC_PROCESS_ID_LIST) calloc(1, required_length);
+          if (!process_id_list) break;
+        }
+
+        if (!success || !process_id_list) continue;
+        if (process_id_list->NumberOfProcessIdsInList == 0) return;
+
+        enum_wnd_context_t enum_ctx = {};
+        enum_ctx.requested_exit = false;
+        for (DWORD i = 0; i < process_id_list->NumberOfProcessIdsInList; i++) {
+          enum_ctx.process_ids.emplace(process_id_list->ProcessIdList[i]);
+        }
+
+        EnumWindows(prgrp_enum_windows_fullscreen, (LPARAM) &enum_ctx);
+        if (enum_ctx.requested_exit) {
+          return;
+        }
+      }
+    }).detach();
+  }
+
   bool process_group_running(std::uintptr_t native_handle) {
     JOBOBJECT_BASIC_ACCOUNTING_INFORMATION accounting_info;
 

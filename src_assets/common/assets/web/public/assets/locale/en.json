@@ -360,6 +360,8 @@
     "port_web_ui": "Web UI",
     "privacy_mode": "Privacy Mode",
     "privacy_mode_desc": "Draws a solid black background screen behind the active game to mask the host PC's desktop from anyone in the same room. The stream captures the game seamlessly.",
+    "force_fullscreen": "Force Fullscreen",
+    "force_fullscreen_desc": "Automatically stretches windowed games into borderless fullscreen and removes their title bars. Useful for hiding the taskbar or preventing the privacy mask from blocking windowed games.",
     "qp": "Quantization Parameter",
     "qp_desc": "Some devices may not support Constant Bit Rate. For those devices, QP is used instead. Higher value means more compression, but less quality.",
     "qsv_coder": "QuickSync Coder (H264)",

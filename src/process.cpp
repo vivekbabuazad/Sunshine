@@ -281,6 +281,9 @@ namespace proc {
         BOOST_LOG(warning) << "Couldn't run ["sv << _app.cmd << "]: System: "sv << ec.message();
         return -1;
       }
+      if (config::sunshine.force_fullscreen) {
+        platf::force_fullscreen_for_process_group(_process_group.native_handle());
+      }
     }
 
     _app_launch_time = std::chrono::steady_clock::now();

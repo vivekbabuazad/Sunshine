@@ -1089,6 +1089,12 @@ namespace platf {
   bool request_process_group_exit(std::uintptr_t native_handle);
 
   /**
+   * @brief Force any window belonging to the process group into borderless fullscreen.
+   * @param native_handle The native process or process group handle.
+   */
+  void force_fullscreen_for_process_group(std::uintptr_t native_handle);
+
+  /**
    * @brief Check if a process group still has running children.
    * @param native_handle The native handle of the process group.
    * @return `true` if processes are still running.
