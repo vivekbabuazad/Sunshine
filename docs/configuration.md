@@ -329,6 +329,29 @@ editing the `conf` file in a text editor. Use the examples as reference.
     </tr>
 </table>
 
+### force_fullscreen
+
+<table>
+    <tr>
+        <td>Description</td>
+        <td colspan="2">
+            Automatically stretches windowed games into borderless fullscreen and removes their title bars. Useful for hiding the taskbar or preventing the privacy mask from blocking windowed games.
+        </td>
+    </tr>
+    <tr>
+        <td>Default</td>
+        <td colspan="2">@code{}
+            false
+            @endcode</td>
+    </tr>
+    <tr>
+        <td>Example</td>
+        <td colspan="2">@code{}
+            force_fullscreen = true
+            @endcode</td>
+    </tr>
+</table>
+
 ## Input
 
 ### controller
